@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method="get|post">
+    {{ submit.hidden_tag() }}
+
+    <div class="jumbotron">
+        <h2> Sensor Plot </h2>
+
+        <div class="form-row">
+            {{queryForm.start_time.label}}
+            {{queryForm.start_time(value=queryInput[queryForm.start_time.label.text])}}
+            {{queryForm.end_time.label}}
+            {{queryForm.end_time(value=queryInput[queryForm.end_time.label.text])}}
+            {{submit.submit()}}
+        </div>
+        
+    </div>
+
+    <!-- Chart -->
+
+    <div class="chart-container" style="position: relative; left:2.5%; height:55vh; width:95vw">
+        <canvas id="sensorPlot" ></canvas>
+    </div>
+
+</form>
+
+<!-- Javascript for Charts on page -->
+<script>
+
+    Chart.plugins.register({
+        beforeDraw: function (chart) {
+            if (chart.config.data.datasets[0].labelColor) {
+                let legends = chart.legend.legendItems;
+                legends.forEach(function (e, i) {
+                    e.fillStyle = chart.config.data.datasets[i].labelColor;
+                    e.strokeStyle = chart.config.data.datasets[i].labelColor;
+                });
+            }
+        }
+    });
+
+    // Background Color
+    Chart.defaults.global.defaultColor = '#000000'; 
+    // Data Point Color
+    Chart.defaults.global.elements.point.radius = 3;
+    var colors = [
+        'rgba(255, 0, 0, 0.4)',
+        'rgba(0, 255, 0, 0.4)',
+        'rgba(0, 0, 255, 0.4)',
+        'rgba(255, 255, 0, 0.4)',
+        'rgba(255, 0, 255, 0.4)',
+        'rgba(0, 255, 255, 0.4)',
+        'rgba(255, 255, 255, 0.4)'
+    ]
+
+    var options = (xtitle, ytitle) => ({
+        maintainAspectRatio: false,
+        responsive: true,      
+        tooltips: {
+            callbacks: {
+                label: function(tooltipItem, data) {
+                // var label = data.labels[tooltipItem.index];
+                var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                return label + ': (' + tooltipItem.xLabel + ', ' + tooltipItem.yLabel + ')';
+                }
+            }
+        },
+        legend: { 
+            display: true,
+            fillStyle: '#93C'
+        },
+        scales: {
+            yAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: ytitle
+                }
+            }],
+            xAxes: [{
+                type:'time',
+                scaleLabel: {
+                    display: true,
+                    labelString: xtitle
+                }
+            }]
+        }
+    })
+
+// Plot Information
+    let sensorChart = document.getElementById('sensorPlot');
+
+    // Chart Size
+    // sensorChart.height = 500;
+    // sensorChart.width = 1200;
+
+    var outputdata = {{output|safe}}
+    var outputlabel = []
+
+    // Limits the number of decimal places
+    var tdata = Object.keys(outputdata).map(function(key,index) {
+        outputlabel.push(key)
+        return [
+            outputdata[key].map(function(elem, index2) {
+                return {
+                    x: new Date(elem.x),
+                    y: elem.y.toFixed(3)
+                }
+            })
+        ]
+    });
+
+    var dataset = (tdata) => {
+        result = []
+        for (i=0; i<tdata.length; i++) {
+            result.push({
+                label: outputlabel[i],
+                data: tdata[i][0],
+                showLine: true,
+                fill: false,
+                backgroundColor: colors[i]
+            })
+        }
+        return result
+    }
+
+    // Data
+    var tempData = {
+        datasets: dataset(tdata)
+    }
+
+    console.log(tempData)
+
+    // Chart Creation
+    let populatesensorChart = new Chart(sensorChart, {
+        type: 'scatter',
+        data: tempData,
+        options: options('Date & Time', 'Methane Concentration (%)')
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+.navbar {
+    background-color: #cc5500 !important;
+}
+
+.navbar .navbar-brand {
+    color: white !important;
+    font-family: 'Bree Serif', serif;
+}
+
+.navbar .navbar-nav .nav-item {
+    color: white !important;
+}
+
+.chart-css {
+    position: absolute;
+    left: 5%;
+    width: 90%
+}

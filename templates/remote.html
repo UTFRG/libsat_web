@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div     class="jumbotron">
+        
+        <h2> Remote Control </h2>
+
+        {{ form.hidden_tag() }}
+        <form method="get|post">
+            <div class="form-row">
+                {{ form.start_program.label }}
+                {{ form.start_program(checked=value) }}
+                {{ form.submit() }}
+            </div>
+        </form>
+
+    </div  >
+
+{% endblock %}
